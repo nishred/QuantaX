@@ -1,0 +1,1 @@
+export type ORDER_STATUS = "new" | "filled" | "cancelled" | "partially_filled";

@@ -1,0 +1,5 @@
+frontend/
+notes.txt
+.env
+node_modules/
+dist/

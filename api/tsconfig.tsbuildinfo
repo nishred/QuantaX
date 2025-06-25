@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/routes/depth.ts","./src/routes/klines.ts","./src/routes/order.ts","./src/routes/ticker.ts","./src/routes/trades.ts"],"version":"5.7.3"}

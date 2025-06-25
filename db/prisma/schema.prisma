@@ -1,0 +1,33 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model sol_usdc_trades {
+  tradeId       String   @id
+  price         String   
+  quantity      String 
+  quoteQuantity String
+  timeStamp     DateTime
+  isBuyerMaker  Boolean
+}
+
+
+//if you set a default uuid ... then it will not create a default constraint in the original sql table at database level....
+//  rather it will associate a uuid while on runtime of the prisma orm code.
+//  So, when injecting a default value in raw query it will throw an error because in the database level there will be no default constraint if we use default(uuid)
+model sol_usdc_prices {
+  id       Int   @unique  @default(autoincrement())
+  price    String
+  time     DateTime
+}

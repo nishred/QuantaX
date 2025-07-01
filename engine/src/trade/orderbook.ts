@@ -109,6 +109,14 @@ export class OrderBook {
       aggregated_asks.push([price, asks_obj[price].toString()]);
     }
 
+    aggregated_asks.sort((a, b) => {
+      return parseFloat(a[0]) - parseFloat(b[0]);
+    });
+
+    aggregated_bids.sort((a, b) => {
+      return parseFloat(b[0]) - parseFloat(a[0]);
+    });
+
     return { bids: aggregated_bids, asks: aggregated_asks };
   }
 
@@ -169,6 +177,8 @@ export class OrderBook {
     let executedQty: number = 0;
     this.asks.sort((o1, o2) => o1.price - o2.price);
     for (let i = 0; i < this.asks.length; i++) {
+      if (order.userId === this.asks[i].userId) continue;
+
       if (this.asks[i].price <= order.price && order.quantity > executedQty) {
         const remainingQty = order.quantity - executedQty;
         const filledQty = Math.min(
@@ -215,6 +225,8 @@ export class OrderBook {
     let executedQty: number = 0;
     this.bids.sort((o1, o2) => o2.price - o1.price);
     for (let i = 0; i < this.bids.length; i++) {
+      if (order.userId === this.bids[i].userId) continue;
+
       if (this.bids[i].price >= order.price && order.quantity > executedQty) {
         const remainingQty = order.quantity - executedQty;
         const filledQty = Math.min(

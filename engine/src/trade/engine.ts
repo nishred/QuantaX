@@ -107,6 +107,8 @@ export class Engine {
 
       case "GET_OPEN_ORDERS":
         try {
+          console.log("market from api", message.data.market);
+
           const orderbook = this.orderbooks.find(
             (orderbook) => orderbook.ticker() == message.data.market
           );
@@ -240,6 +242,42 @@ export class Engine {
         }
         break;
 
+      case "GET_TICKER":
+        try {
+          const orderbook = this.orderbooks.find((orderbook) => {
+            return orderbook.ticker() == message.data.market;
+          });
+
+          if (!orderbook) {
+            throw new Error("No orderbook found!");
+          }
+
+          const currentPrice = orderbook.currentPrice;
+
+          const { bid, ask } = orderbook.getBestBidsAsks();
+
+          const fairPrice = (bid + ask) / 2;
+
+          RedisManager.getInstance().sendToApi(clientId, {
+            type: "TICKER",
+            payload: {
+              currentPrice: parseFloat(currentPrice.toFixed(2)),
+              fairPrice: parseFloat(fairPrice.toFixed(2)),
+            },
+          });
+        } catch (error) {
+          console.log(error);
+          RedisManager.getInstance().sendToApi(clientId, {
+            type: "TICKER",
+            payload: {
+              currentPrice: 0,
+              fairPrice: 0,
+            },
+          });
+        }
+
+        break;
+
       case "ADD_BOT":
         try {
           this.createBot(message.data);
@@ -370,6 +408,8 @@ export class Engine {
       status: "new",
     };
 
+    console.log("order in engine", order);
+
     // ==========BUY SIDE==========
 
     //1) iterate over the asks in the ascending order and keep on assigning the fills to the order
@@ -382,6 +422,8 @@ export class Engine {
     //and you can replay the messages in kafka, but not in redis pubsub.
 
     const { fills, executedQty } = orderbook.addOrder(order);
+
+    console.log("fills in engine", fills);
 
     this.updateBalance(userId, baseAsset, quoteAsset, side, fills);
     this.createDbOrders(order, market);
@@ -686,29 +728,18 @@ export class Engine {
   }
 
   publishBookTickerUpdated_cancelled(orderbook: OrderBook, market: string) {
-    const bid = {
-      price: orderbook.bids.length == 0 ? 0 : orderbook.bids[0].price,
-      qty:
-        orderbook.bids.length == 0
-          ? 0
-          : orderbook.bids[0].quantity - orderbook.bids[0].filled,
-    };
-    const ask = {
-      price: orderbook.asks.length == 0 ? 0 : orderbook.asks[0].price,
-      qty:
-        orderbook.asks.length == 0
-          ? 0
-          : orderbook.asks[0].quantity - orderbook.asks[0].filled,
-    };
+    const currentPrice = orderbook.currentPrice;
+
+    const { bid, ask } = orderbook.getBestBidsAsks();
+
+    const fairPrice = (bid + ask) / 2;
+
     RedisManager.getInstance().publishToWs(`bookTicker@${market}`, {
       stream: `bookTicker@${market}`,
       data: {
         e: "bookTicker",
-        s: market,
-        a: ask.price.toString(),
-        A: ask.qty.toString(),
-        b: bid.price.toString(),
-        B: bid.qty.toString(),
+        currentPrice,
+        fairPrice,
       },
     });
   }

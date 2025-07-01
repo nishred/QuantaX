@@ -180,7 +180,7 @@ export class OrderBook {
           this.lastTradeId++;
 
           this.currentPrice = this.asks[i].price;
-        }
+        } else continue;
 
         executedQty = executedQty + filledQty;
         this.asks[i].filled = this.asks[i].filled + filledQty;
@@ -226,7 +226,7 @@ export class OrderBook {
           this.lastTradeId++;
 
           this.currentPrice = this.bids[i].price;
-        }
+        } else continue;
 
         executedQty = executedQty + filledQty;
         this.bids[i].filled = this.bids[i].filled + filledQty;

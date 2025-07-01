@@ -4,8 +4,8 @@ import { OutgoingMessage } from "./types/toBrowser";
 
 export class SubscriptionManager {
     private static instance : SubscriptionManager;
-    private subscriptions : Map<string , string[]>;
-    private reverseSubscription : Map<string , string[]>;
+    private subscriptions : Map<string , string[]>;  //user id, streams
+    private reverseSubscription : Map<string , string[]>;  //stream, user ids
     private redisClient : RedisClientType;
 
     private constructor(){
